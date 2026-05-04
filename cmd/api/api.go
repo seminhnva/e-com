@@ -7,17 +7,29 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/seminhnva/e-com/internal/store"
 )
 
-type Application struct {
-	config Config
+type application struct {
+	config config
+	store  store.Storage
+	db     dbConfig
 }
 
-type Config struct {
-	addr string
+type config struct {
+	addr    string
+	db      dbConfig
+	env     string
+	version string
+}
+type dbConfig struct {
+	addr          string
+	maxOpenConns  int
+	maxIddleConns int
+	maxIdleTime   time.Duration
 }
 
-func (app *Application) mount() *chi.Mux {
+func (app *application) mount() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -29,7 +41,7 @@ func (app *Application) mount() *chi.Mux {
 	})
 	return r
 }
-func (app *Application) run(mux *chi.Mux) error {
+func (app *application) run(mux *chi.Mux) error {
 	srv := http.Server{
 		Addr:         app.config.addr,
 		Handler:      mux,

@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:18.3-alpine3.23
+    container_name: e-com
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER:  ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-networks
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  db_data:
+
+networks:
+  app-networks:
+    driver: bridge
