@@ -1,4 +1,4 @@
-.PHONY: run build test clean migrate-create
+.PHONY: run build test clean migrate-create docker-up docker-down docker-build
 -include .env 
 export
 CONNECTION_STRING=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
@@ -8,6 +8,7 @@ run:
 
 build:
 	go build -o bin/api ./cmd/api/
+
 
 test:
 	go test ./...
@@ -23,3 +24,12 @@ migrate-up:
 
 migrate-down:
 	migrate -path cmd/migrate/migrations -database "$(CONNECTION_STRING)" down 1
+
+docker-build:
+	docker compose build
+
+docker-up:
+	docker compose up -d
+
+docker-down:
+	docker compose down
