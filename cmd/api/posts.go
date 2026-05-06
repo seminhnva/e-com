@@ -40,8 +40,8 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 		Content: payload.Content,
 		Title:   payload.Title,
 		// TODO: get change after auth
-		UserID: 1,
-		Tags:   []string{"tag1", "tag2"},
+		UserID: 101,
+		Tags:   payload.Tags,
 	}
 	if err := app.store.Posts.Create(r.Context(), post); err != nil {
 		app.handleError(w, r, err)
