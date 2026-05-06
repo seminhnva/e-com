@@ -1,4 +1,4 @@
-.PHONY: run build test clean migrate-create docker-up docker-down docker-build
+.PHONY: run build test clean migrate-create docker-up docker-down docker-build seed
 -include .env 
 export
 CONNECTION_STRING=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
@@ -33,3 +33,6 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+seed:
+	go run ./cmd/migrate/seed/
