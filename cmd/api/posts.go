@@ -25,6 +25,18 @@ type UpdatePostPayload struct {
 	Title   *string `json:"title" validate:"omitempty,max=200"`
 }
 
+// createPostHandler godoc
+//
+//	@Summary		Create a post
+//	@Description	Create a new post
+//	@Tags			posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		CreatePostPayload	true	"Post payload"
+//	@Success		200		{object}	store.Post
+//	@Failure		400		{object}	error	"Invalid request body"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/posts [post]
 func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var payload CreatePostPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -53,6 +65,18 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// getPostHandler godoc
+//
+//	@Summary		Get a post
+//	@Description	Fetch a single post with its comments by ID
+//	@Tags			posts
+//	@Produce		json
+//	@Param			postID	path		int	true	"Post ID"
+//	@Success		200		{object}	store.Post
+//	@Failure		400		{object}	error	"Invalid post ID"
+//	@Failure		404		{object}	error	"Post not found"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/posts/{postID} [get]
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)
 	comments, err := app.store.Comments.GetByPostID(r.Context(), post.ID)
@@ -67,6 +91,17 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// deletePostHandler godoc
+//
+//	@Summary		Delete a post
+//	@Description	Delete a post by ID
+//	@Tags			posts
+//	@Param			postID	path	int	true	"Post ID"
+//	@Success		204		"No Content"
+//	@Failure		400		{object}	error	"Invalid post ID"
+//	@Failure		404		{object}	error	"Post not found"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/posts/{postID} [delete]
 func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
 	postID := chi.URLParam(r, "postID")
 	id, err := strconv.ParseInt(postID, 10, 64)
@@ -81,6 +116,20 @@ func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// updatePostHandler godoc
+//
+//	@Summary		Update a post
+//	@Description	Update title or content of a post
+//	@Tags			posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			postID	path		int					true	"Post ID"
+//	@Param			payload	body		UpdatePostPayload	true	"Update payload"
+//	@Success		200		{object}	store.Post
+//	@Failure		400		{object}	error	"Invalid request"
+//	@Failure		404		{object}	error	"Post not found"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/posts/{postID} [patch]
 func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)
 

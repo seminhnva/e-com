@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -81,7 +82,9 @@ func (app *application) mount() *chi.Mux {
 func (app *application) run(mux *chi.Mux) error {
 	//Docs
 	docs.SwaggerInfo.Version = app.config.version
-	docs.SwaggerInfo.Host = app.config.apiURL
+	if u, err := url.Parse(app.config.apiURL); err == nil {
+		docs.SwaggerInfo.Host = u.Host
+	}
 	docs.SwaggerInfo.BasePath = "/v1"
 	srv := http.Server{
 		Addr:         app.config.addr,

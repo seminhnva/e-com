@@ -17,6 +17,19 @@ type FollowUser struct {
 	UserID int64 `json:"user_id" validate:"required"`
 }
 
+// getUserHandler godoc
+//
+//	@Summary		Get user by ID
+//	@Description	Fetch a single user by their ID
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path		int	true	"User ID"
+//	@Success		200		{object}	store.User
+//	@Failure		400		{object}	error	"Invalid user ID"
+//	@Failure		404		{object}	error	"User not found"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/users/{userID} [get]
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromCtx(r)
 
@@ -26,6 +39,20 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// followUserHandler godoc
+//
+//	@Summary		Follow a user
+//	@Description	Follow a user by their ID
+//	@Tags			users
+//	@Accept			json
+//	@Param			userID	path	int			true	"User ID to follow"
+//	@Param			payload	body	FollowUser	true	"Follower user ID"
+//	@Success		204		"No Content"
+//	@Failure		400		{object}	error	"Invalid request"
+//	@Failure		404		{object}	error	"User not found"
+//	@Failure		409		{object}	error	"Already following"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/users/{userID}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	followedUser := getUserFromCtx(r)
 	// TODO: revert back to authenticated user ID instead of passing in the payload
@@ -46,6 +73,19 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// unfollowUserHandler godoc
+//
+//	@Summary		Unfollow a user
+//	@Description	Unfollow a user by their ID
+//	@Tags			users
+//	@Accept			json
+//	@Param			userID	path	int			true	"User ID to unfollow"
+//	@Param			payload	body	FollowUser	true	"Follower user ID"
+//	@Success		204		"No Content"
+//	@Failure		400		{object}	error	"Invalid request"
+//	@Failure		404		{object}	error	"User not found"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Router			/users/{userID}/unfollow [put]
 func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	followedUser := getUserFromCtx(r)
 	// TODO: revert back to authenticated user ID instead of passing in the payload

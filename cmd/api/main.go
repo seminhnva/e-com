@@ -9,9 +9,8 @@ import (
 	"github.com/seminhnva/e-com/internal/store"
 )
 
-//	@title	Go E-Com API
-
-//	@description	An API for an e-commerce application built with Go.
+//	@title			Go social API
+//	@description	An API for a social media application built with Go.
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	API Support
@@ -20,6 +19,17 @@ import (
 
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@tag.name			ops
+//	@tag.description	Health and operational endpoints
+//	@tag.name			posts
+//	@tag.description	Post management
+//	@tag.name			comments
+//	@tag.description	Comment management
+//	@tag.name			users
+//	@tag.description	User management
+//	@tag.name			feed
+//	@tag.description	Feed endpoints
 
 // @BasePath					/v1
 // @securityDefinitions.apikey	ApiKeyAuth

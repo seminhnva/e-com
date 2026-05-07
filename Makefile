@@ -1,7 +1,9 @@
 .PHONY: run build test clean migrate-create docker-up docker-down docker-build seed gen-docs
--include .env 
+-include .env
 export
 CONNECTION_STRING=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
+
+export PATH := $(PATH):$(shell go env GOPATH)/bin
 
 run:
 	go run ./cmd/api/
