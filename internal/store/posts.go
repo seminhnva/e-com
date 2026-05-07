@@ -13,6 +13,7 @@ type PostsRepository interface {
 	GetByID(context.Context, int64) (*Post, error)
 	Delete(context.Context, int64) error
 	Update(context.Context, *Post) error
+	GetUserFeed(context.Context, int64, PaginatedFeedQuery) ([]*PostWithMetadata, int, error)
 }
 
 type Post struct {
@@ -25,6 +26,12 @@ type Post struct {
 	UpdatedAt time.Time  `json:"updated_at"`
 	Version   int        `json:"version"`
 	Comments  []*Comment `json:"comments,omitempty"`
+	User      *User      `json:"user,omitempty"`
+}
+
+type PostWithMetadata struct {
+	Post
+	CommentCount int `json:"comment_count"`
 }
 
 type PostsStore struct {
@@ -106,4 +113,64 @@ func (s *PostsStore) Update(ctx context.Context, post *Post) error {
 		return ErrEditConflict
 	}
 	return nil
+}
+
+func (s *PostsStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedFeedQuery) ([]*PostWithMetadata, int, error) {
+	query := `
+	SELECT
+		p.id, p.user_id, p.title, p.content, p.tags,
+		p.version, p.created_at, p.updated_at,
+		u.username,
+		COUNT(c.id) AS comment_count,
+		COUNT(*) OVER() AS total_count
+	FROM posts p
+	LEFT JOIN comments c ON c.post_id = p.id
+	JOIN users u ON u.id = p.user_id
+	JOIN followers f ON f.user_id = p.user_id AND f.follower_id = $1
+	WHERE (
+    $4 = ''
+    OR p.title ILIKE '%' || $4 || '%'
+    OR p.content ILIKE '%' || $4 || '%'
+    OR EXISTS (
+        SELECT 1 FROM unnest(p.tags) tag
+        WHERE tag ILIKE '%' || $4 || '%'
+    )
+	)
+	GROUP BY p.id, u.id, u.username
+	ORDER BY p.created_at DESC
+	LIMIT $2 OFFSET $3
+	`
+	rows, err := s.db.QueryContext(ctx, query, userID, fq.Limit, fq.Offset(), fq.Search)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var posts []*PostWithMetadata
+	var total int
+	for rows.Next() {
+		var p PostWithMetadata
+		p.Post.User = &User{}
+		err := rows.Scan(
+			&p.ID,
+			&p.UserID,
+			&p.Title,
+			&p.Content,
+			pq.Array(&p.Tags),
+			&p.Version,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.Post.User.Username,
+			&p.CommentCount,
+			&total,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+		posts = append(posts, &p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return posts, total, nil
 }

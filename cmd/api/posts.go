@@ -111,6 +111,10 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		postID := chi.URLParam(r, "postID")

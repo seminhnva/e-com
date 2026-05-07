@@ -43,6 +43,8 @@ func (app *application) handleError(w http.ResponseWriter, r *http.Request, err 
 		app.notFoundResponse(w, r, err)
 	case errors.Is(err, store.ErrEditConflict):
 		app.conflictResponse(w, r, err)
+	case errors.Is(err, store.ErrConflict):
+		writeJSONError(w, http.StatusConflict, err.Error())
 	default:
 		app.internalServerError(w, r, err)
 	}

@@ -13,11 +13,11 @@ type UsersRepository interface {
 }
 
 type User struct {
-	ID        int64     `json:"id"`
+	ID        int64     `json:"id,omitempty"`
 	Username  string    `json:"username"`
-	Email     string    `json:"email"`
+	Email     string    `json:"email,omitempty"`
 	Password  string    `json:"-"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 type UsersStore struct {
