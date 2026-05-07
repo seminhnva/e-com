@@ -9,8 +9,22 @@ import (
 	"github.com/seminhnva/e-com/internal/store"
 )
 
-const version = "1.0.0"
+//	@title	Go E-Com API
 
+//	@description	An API for an e-commerce application built with Go.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @BasePath					/v1
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
 func main() {
 	cfg := config{
 		addr: env.GetString("ADDR", ":8080"),
@@ -21,7 +35,8 @@ func main() {
 			maxIdleTime:   env.GetDuration("DB_MAX_IDLE_TIME", time.Minute*5),
 		},
 		env:     env.GetString("APP_ENV", "development"),
-		version: version,
+		version: env.GetString("APP_VERSION", "0.0.2"),
+		apiURL:  env.GetString("EXTERNAL_URL", "http://localhost:8080"),
 	}
 	db, err := db.NewDB(cfg.db.addr, cfg.db.maxOpenConns, cfg.db.maxIddleConns, cfg.db.maxIdleTime)
 	if err != nil {

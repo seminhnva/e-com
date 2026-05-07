@@ -1,4 +1,4 @@
-.PHONY: run build test clean migrate-create docker-up docker-down docker-build seed
+.PHONY: run build test clean migrate-create docker-up docker-down docker-build seed gen-docs
 -include .env 
 export
 CONNECTION_STRING=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
@@ -36,3 +36,6 @@ docker-down:
 
 seed:
 	go run ./cmd/migrate/seed/
+
+gen-docs:
+	swag init -g api/main.go -d cmd,internal && swag fmt
