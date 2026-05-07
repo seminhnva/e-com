@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/seminhnva/e-com/internal/db"
 	"github.com/seminhnva/e-com/internal/env"
 	"github.com/seminhnva/e-com/internal/store"
+	"go.uber.org/zap"
 )
 
 //	@title			Go social API
@@ -48,18 +48,23 @@ func main() {
 		version: env.GetString("APP_VERSION", "0.0.2"),
 		apiURL:  env.GetString("EXTERNAL_URL", "http://localhost:8080"),
 	}
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	logger.Infof("starting application in %s mode", cfg.env)
 	db, err := db.NewDB(cfg.db.addr, cfg.db.maxOpenConns, cfg.db.maxIddleConns, cfg.db.maxIdleTime)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 	defer db.Close()
-	log.Printf("db connection pool established")
+	logger.Infof("db connection pool established")
 	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 	mux := app.mount()
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }

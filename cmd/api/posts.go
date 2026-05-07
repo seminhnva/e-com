@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -173,7 +172,7 @@ func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		post, err := app.store.Posts.GetByID(r.Context(), id)
-		log.Printf("err: %v | ctx.Err: %v", err, r.Context().Err())
+		app.logger.Infof("err: %v | ctx.Err: %v", err, r.Context().Err())
 
 		if err != nil {
 			app.handleError(w, r, err)
