@@ -27,6 +27,10 @@ type config struct {
 	env     string
 	version string
 	apiURL  string
+	mail    mailConfig
+}
+type mailConfig struct {
+	exp time.Duration
 }
 type dbConfig struct {
 	addr          string
@@ -76,6 +80,10 @@ func (app *application) mount() *chi.Mux {
 		r.Group(func(r chi.Router) {
 			r.Get("/feed", app.getFeedHandler)
 
+		})
+		r.Route("authentication", func(r chi.Router) {
+			// r.Post("/user", app.loginHandler)
+			r.Post("/user", app.registerUserHandler)
 		})
 	})
 	return r

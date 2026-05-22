@@ -44,7 +44,10 @@ func main() {
 			maxIddleConns: env.GetInt("DB_MAX_IDDLE_CONNS", 25),
 			maxIdleTime:   env.GetDuration("DB_MAX_IDLE_TIME", time.Minute*5),
 		},
-		env:     env.GetString("APP_ENV", "development"),
+		env: env.GetString("APP_ENV", "development"),
+		mail: mailConfig{
+			exp: time.Hour * 1,
+		},
 		version: env.GetString("APP_VERSION", "0.0.2"),
 		apiURL:  env.GetString("EXTERNAL_URL", "http://localhost:8080"),
 	}

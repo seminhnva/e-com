@@ -44,6 +44,10 @@ func (app *application) handleError(w http.ResponseWriter, r *http.Request, err 
 		app.conflictResponse(w, r, err)
 	case errors.Is(err, store.ErrConflict):
 		writeJSONError(w, http.StatusConflict, err.Error())
+	case errors.Is(err, store.ErrDuplicateEmail):
+		writeJSONError(w, http.StatusConflict, err.Error())
+	case errors.Is(err, store.ErrDuplicateUsername):
+		writeJSONError(w, http.StatusConflict, err.Error())
 	default:
 		app.internalServerError(w, r, err)
 	}
