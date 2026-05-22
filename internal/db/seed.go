@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -52,15 +53,19 @@ var comments = []string{
 	"We need more posts like this",
 }
 
-func Seed(store store.Storage) error {
+func Seed(store store.Storage, db *sql.DB) {
 	ctx := context.Background()
 
 	users := generateUsers(100)
+	tx, _ := db.BeginTx(ctx, nil)
 	for _, user := range users {
-		if err := store.Users.Create(ctx, user); err != nil {
+		if err := store.Users.Create(ctx, tx, user); err != nil {
+			_ = tx.Rollback()
 			log.Printf("failed to create user %s: %v", user.Username, err)
+			return
 		}
 	}
+	tx.Commit()
 
 	posts := generatePosts(1000, users)
 	for _, post := range posts {
@@ -76,18 +81,19 @@ func Seed(store store.Storage) error {
 		}
 	}
 	log.Println("seeding completed")
-	return nil
+
 }
 
 func generateUsers(n int) []*store.User {
 	users := make([]*store.User, n)
 	for i := 0; i < n; i++ {
 		name := usernames[i%len(usernames)]
-		users[i] = &store.User{
+		user := &store.User{
 			Username: fmt.Sprintf("%s_%d", name, i+1),
 			Email:    fmt.Sprintf("%s_%d@example.com", name, i+1),
-			Password: "testing",
 		}
+		_ = user.Password.Set("testing")
+		users[i] = user
 	}
 	return users
 }

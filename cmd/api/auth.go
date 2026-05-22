@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/seminhnva/e-com/internal/password"
 	"github.com/seminhnva/e-com/internal/store"
 )
 
@@ -16,8 +15,21 @@ type RegisterUserPayLoad struct {
 	Password string `json:"password" validate:"required,min=8,max=100"`
 }
 
-//
+type UserWithToken struct {
+	*store.User
+	Token string `json:"token"`
+}
 
+// @Summary		Register a new user
+// @Description	Register a new user and send an invitation email
+// @Tags			authentication
+// @Accept			json
+// @Produce		json
+// @Param			payload	body		RegisterUserPayLoad	true	"User registration payload"
+// @Success		201		{object}	store.User
+// @Failure		400		{object}	error	"Invalid request body"
+// @Failure		500		{object}	error	"Internal server error"
+// @Router			/authentication/user [post]
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var payload RegisterUserPayLoad
 	if err := readJSON(w, r, &payload); err != nil {
@@ -32,22 +44,26 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		Username: payload.Username,
 		Email:    payload.Email,
 	}
-	hassPw, err := password.Hash(payload.Password)
-	if err != nil {
+	if err := user.Password.Set(payload.Password); err != nil {
 		app.handleError(w, r, err)
+		return
 	}
-	user.Password = hassPw
 	plainToken := uuid.New().String()
 	hash := sha256.Sum256([]byte(plainToken))
 	hashToken := hex.EncodeToString(hash[:])
 	// store hash token
-	err = app.store.Users.CreateAndInvite(r.Context(), user, hashToken, app.config.mail.exp)
-	if err != nil {
+	if err := app.store.Users.CreateAndInvite(r.Context(), user, hashToken, app.config.mail.exp); err != nil {
 		app.handleError(w, r, err)
+		return
 	}
 
 	//mail
-	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
+	userWithToken := UserWithToken{
+		User:  user,
+		Token: plainToken,
+	}
+
+	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.handleError(w, r, err)
 	}
 

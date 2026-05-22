@@ -20,17 +20,16 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@tag.name			ops
-//	@tag.description	Health and operational endpoints
-//	@tag.name			posts
-//	@tag.description	Post management
-//	@tag.name			comments
-//	@tag.description	Comment management
-//	@tag.name			users
-//	@tag.description	User management
-//	@tag.name			feed
-//	@tag.description	Feed endpoints
-
+// @tag.name					ops
+// @tag.description			Health and operational endpoints
+// @tag.name					posts
+// @tag.description			Post management
+// @tag.name					comments
+// @tag.description			Comment management
+// @tag.name					users
+// @tag.description			User management
+// @tag.name					feed
+// @tag.description			Feed endpoints
 // @BasePath					/v1
 // @securityDefinitions.apikey	ApiKeyAuth
 // @in							header
