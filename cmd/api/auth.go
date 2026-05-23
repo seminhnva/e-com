@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -73,17 +74,19 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		ActivationURL: activationURL,
 	}
 	//sned mail
-	err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Username, user.Email, vars, !isProEnv)
+	status, err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Username, user.Email, vars, !isProEnv)
 
 	if err != nil {
 		app.logger.Errorw("error sending welcome email", "error", err)
 		// rollback user reaction if email fails (saga pattern)
-		if err := app.store.Users.Delete(r.Context(), user.ID); err != nil {
+		if err := app.store.Users.Delete(context.Background(), user.ID); err != nil {
 			app.logger.Errorw("error deleting user", "error", err)
 		}
 		app.handleError(w, r, err)
 		return
 	}
+	app.logger.Info("Email sent", "status code", status)
+
 	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.handleError(w, r, err)
 	}
