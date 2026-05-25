@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/seminhnva/e-com/docs"
+	"github.com/seminhnva/e-com/internal/auth"
 	"github.com/seminhnva/e-com/internal/mailer"
 	"github.com/seminhnva/e-com/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -16,11 +17,12 @@ import (
 )
 
 type application struct {
-	config config
-	store  store.Storage
-	db     dbConfig
-	logger *zap.SugaredLogger
-	mailer mailer.Client
+	config        config
+	store         store.Storage
+	db            dbConfig
+	logger        *zap.SugaredLogger
+	mailer        mailer.Client
+	authenticator auth.Authenticator
 }
 
 type config struct {
@@ -31,6 +33,22 @@ type config struct {
 	apiURL      string
 	mail        mailConfig
 	frontendURL string
+	auth        authConfig
+}
+
+type authConfig struct {
+	basic basicConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	iss    string
+	secret string
+	exp    time.Duration
+}
+type basicConfig struct {
+	user string
+	pass string
 }
 type mailConfig struct {
 	sendGrid  sendGridConfig
@@ -57,7 +75,7 @@ func (app *application) mount() *chi.Mux {
 	r.Use(middleware.Timeout(3 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/health", app.healthCheckHandler)
+		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckHandler)
 
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
@@ -93,6 +111,7 @@ func (app *application) mount() *chi.Mux {
 		})
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
+			r.Post("/token", app.createTokenHandler)
 		})
 	})
 	return r

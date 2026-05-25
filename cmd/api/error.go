@@ -32,6 +32,16 @@ func (app *application) timeoutResponse(w http.ResponseWriter, r *http.Request) 
 	writeJSONError(w, http.StatusServiceUnavailable, "request timeout, please try again")
 }
 
+func (app *application) unauthorizedErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logger.Warnf("unauthorized error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	writeJSONError(w, http.StatusUnauthorized, "unauthorized")
+}
+func (app *application) unauthorizedBasicErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logger.Warnf("unauthorized basic error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+	writeJSONError(w, http.StatusUnauthorized, "unauthorized")
+}
+
 func (app *application) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
 	case errors.Is(err, context.DeadlineExceeded), r.Context().Err() == context.DeadlineExceeded:

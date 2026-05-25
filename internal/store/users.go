@@ -18,6 +18,7 @@ type UsersRepository interface {
 	CreateAndInvite(ctx context.Context, user *User, token string, exp time.Duration) error
 	Activate(context.Context, string) error
 	Delete(context.Context, int64) error
+	GetByEmail(context.Context, string) (*User, error)
 }
 
 type UserRegister struct {
@@ -95,6 +96,27 @@ func (s *UsersStore) GetById(ctx context.Context, id int64) (*User, error) {
 	defer cancel()
 
 	row := s.db.QueryRowContext(ctx, query, id)
+	user := &User{}
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *UsersStore) GetByEmail(ctx context.Context, email string) (*User, error) {
+	query := `
+	SELECT id, username, email, created_at
+	FROM users
+	WHERE email = $1
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	row := s.db.QueryRowContext(ctx, query, email)
 	user := &User{}
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
 	if err != nil {
