@@ -50,6 +50,10 @@ func (p *password) Set(text string) error {
 	return nil
 }
 
+func (p *password) Compare(text string) (bool, error) {
+	return pwutil.Verify(text, p.hash)
+}
+
 type UsersStore struct {
 	db *sql.DB
 }
@@ -109,7 +113,7 @@ func (s *UsersStore) GetById(ctx context.Context, id int64) (*User, error) {
 
 func (s *UsersStore) GetByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
-	SELECT id, username, email, created_at
+	SELECT id, username, email, password, is_active, created_at
 	FROM users
 	WHERE email = $1
 	`
@@ -118,7 +122,7 @@ func (s *UsersStore) GetByEmail(ctx context.Context, email string) (*User, error
 
 	row := s.db.QueryRowContext(ctx, query, email)
 	user := &User{}
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password.hash, &user.IsActive, &user.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound

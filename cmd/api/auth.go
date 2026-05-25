@@ -133,6 +133,24 @@ func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 			return
 		}
 	}
+
+	// verify password
+	match, err := user.Password.Compare(payload.Password)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+	if !match {
+		app.unauthorizedErrorResponse(w, r, fmt.Errorf("invalid credentials"))
+		return
+	}
+
+	// check account is activated
+	if !user.IsActive {
+		app.unauthorizedErrorResponse(w, r, fmt.Errorf("account is not activated"))
+		return
+	}
+
 	// generate the token -> add claimns
 	claims := jwt.MapClaims{
 		"sub": user.ID,
