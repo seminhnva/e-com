@@ -35,8 +35,10 @@ type UpdatePostPayload struct {
 //	@Success		200		{object}	store.Post
 //	@Failure		400		{object}	error	"Invalid request body"
 //	@Failure		500		{object}	error	"Internal server error"
+//	@Security		ApiKeyAuth
 //	@Router			/posts [post]
 func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromCtx(r)
 	var payload CreatePostPayload
 	if err := readJSON(w, r, &payload); err != nil {
 		app.badReqestResponse(w, r, err)
@@ -50,9 +52,8 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	post := &store.Post{
 		Content: payload.Content,
 		Title:   payload.Title,
-		// TODO: get change after auth
-		UserID: 101,
-		Tags:   payload.Tags,
+		UserID:  user.ID,
+		Tags:    payload.Tags,
 	}
 	if err := app.store.Posts.Create(r.Context(), post); err != nil {
 		app.handleError(w, r, err)
@@ -75,6 +76,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 //	@Failure		400		{object}	error	"Invalid post ID"
 //	@Failure		404		{object}	error	"Post not found"
 //	@Failure		500		{object}	error	"Internal server error"
+//	@Security		ApiKeyAuth
 //	@Router			/posts/{postID} [get]
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)
@@ -100,6 +102,7 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 //	@Failure		400		{object}	error	"Invalid post ID"
 //	@Failure		404		{object}	error	"Post not found"
 //	@Failure		500		{object}	error	"Internal server error"
+//	@Security		ApiKeyAuth
 //	@Router			/posts/{postID} [delete]
 func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
 	postID := chi.URLParam(r, "postID")
@@ -128,6 +131,7 @@ func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request
 //	@Failure		400		{object}	error	"Invalid request"
 //	@Failure		404		{object}	error	"Post not found"
 //	@Failure		500		{object}	error	"Internal server error"
+//	@Security		ApiKeyAuth
 //	@Router			/posts/{postID} [patch]
 func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)

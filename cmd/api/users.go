@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
@@ -12,10 +11,6 @@ import (
 type userKey string
 
 const userCtx userKey = "user"
-
-type FollowUser struct {
-	UserID int64 `json:"user_id" validate:"required"`
-}
 
 // getUserHandler godoc
 //
@@ -54,15 +49,12 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Failure		500		{object}	error	"Internal server error"
 //	@Router			/users/{userID}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
-	followedUser := getUserFromCtx(r)
-	// TODO: revert back to authenticated user ID instead of passing in the payload
-	var payload FollowUser
-	if err := readJSON(w, r, &payload); err != nil {
-		app.badReqestResponse(w, r, err)
-		return
+	followerUser := getUserFromCtx(r)
+	followeredID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
+		app.handleError(w, r, err)
 	}
-
-	if err := app.store.Follower.Follow(r.Context(), payload.UserID, followedUser.ID); err != nil {
+	if err := app.store.Follower.Follow(r.Context(), followerUser.ID, followeredID); err != nil {
 		app.handleError(w, r, err)
 		return
 	}
@@ -90,13 +82,12 @@ func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Reque
 	followedUser := getUserFromCtx(r)
 	// TODO: revert back to authenticated user ID instead of passing in the payload
 
-	var payload FollowUser
-	if err := readJSON(w, r, &payload); err != nil {
-		app.badReqestResponse(w, r, err)
-		return
+	followeredID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
+		app.handleError(w, r, err)
 	}
 
-	if err := app.store.Follower.Unfollow(r.Context(), payload.UserID, followedUser.ID); err != nil {
+	if err := app.store.Follower.Unfollow(r.Context(), followeredID, followedUser.ID); err != nil {
 		app.handleError(w, r, err)
 		return
 	}
@@ -136,28 +127,28 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (app *application) userByIdContextMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
-		if err != nil {
-			app.badReqestResponse(w, r, err)
-			return
-		}
-		user, err := app.store.Users.GetById(r.Context(), userID)
-		if err != nil {
-			switch err {
-			case store.ErrNotFound:
-				app.notFoundResponse(w, r, err)
-				return
-			default:
-				app.handleError(w, r, err)
-				return
-			}
-		}
-		ctx := context.WithValue(r.Context(), userCtx, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
+//	func (app *application) userByIdContextMiddleware(next http.Handler) http.Handler {
+//		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//			userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+//			if err != nil {
+//				app.badReqestResponse(w, r, err)
+//				return
+//			}
+//			user, err := app.store.Users.GetById(r.Context(), userID)
+//			if err != nil {
+//				switch err {
+//				case store.ErrNotFound:
+//					app.notFoundResponse(w, r, err)
+//					return
+//				default:
+//					app.handleError(w, r, err)
+//					return
+//				}
+//			}
+//			ctx := context.WithValue(r.Context(), userCtx, user)
+//			next.ServeHTTP(w, r.WithContext(ctx))
+//		})
+//	}
 func getUserFromCtx(r *http.Request) *store.User {
 	user, _ := r.Context().Value(userCtx).(*store.User)
 	return user
