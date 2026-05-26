@@ -22,5 +22,5 @@ INSERT INTO roles(name,description,level)
 VALUES (
     'admin',
     'a admin can update and delete other users posts',
-    1
+    3
 );

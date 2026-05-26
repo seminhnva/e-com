@@ -86,11 +86,15 @@ func Seed(store store.Storage, db *sql.DB) {
 
 func generateUsers(n int) []*store.User {
 	users := make([]*store.User, n)
+
 	for i := 0; i < n; i++ {
 		name := usernames[i%len(usernames)]
 		user := &store.User{
 			Username: fmt.Sprintf("%s_%d", name, i+1),
 			Email:    fmt.Sprintf("%s_%d@example.com", name, i+1),
+			Role: store.Role{
+				Name: "user",
+			},
 		}
 		_ = user.Password.Set("testing")
 		users[i] = user

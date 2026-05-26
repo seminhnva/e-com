@@ -36,6 +36,7 @@ import (
 // @securityDefinitions.apikey	ApiKeyAuth
 // @in							header
 // @name						Authorization
+// @description				Type "Bearer" followed by a space and the JWT token. Example: "Bearer eyJhbGci..."
 func main() {
 	cfg := config{
 		addr:        env.GetString("ADDR", ":8080"),
