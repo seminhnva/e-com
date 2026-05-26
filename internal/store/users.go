@@ -99,7 +99,8 @@ func (s *UsersStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (s *UsersStore) GetById(ctx context.Context, id int64) (*User, error) {
 	query := `
-	SELECT users.id, username, email, created_at, roles.*
+	SELECT users.id, users.username, users.email, users.created_at, users.is_active, users.role_id,
+	       roles.id, roles.name, roles.level, roles.description
 	FROM users
 	JOIN roles ON (users.role_id = roles.id)
 	WHERE users.id = $1
@@ -109,11 +110,9 @@ func (s *UsersStore) GetById(ctx context.Context, id int64) (*User, error) {
 
 	row := s.db.QueryRowContext(ctx, query, id)
 	user := &User{}
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt,
-		&user.Role.ID,
-		&user.Role.Name,
-		&user.Role.Level,
-		&user.Role.Description,
+	err := row.Scan(
+		&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.IsActive, &user.RoleID,
+		&user.Role.ID, &user.Role.Name, &user.Role.Level, &user.Role.Description,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

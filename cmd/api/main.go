@@ -3,11 +3,13 @@ package main
 import (
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/seminhnva/e-com/internal/auth"
 	"github.com/seminhnva/e-com/internal/db"
 	"github.com/seminhnva/e-com/internal/env"
 	"github.com/seminhnva/e-com/internal/mailer"
 	"github.com/seminhnva/e-com/internal/store"
+	"github.com/seminhnva/e-com/internal/store/cache"
 	"go.uber.org/zap"
 )
 
@@ -47,6 +49,12 @@ func main() {
 			maxIddleConns: env.GetInt("DB_MAX_IDDLE_CONNS", 25),
 			maxIdleTime:   env.GetDuration("DB_MAX_IDLE_TIME", time.Minute*5),
 		},
+		redisCfg: redisConfig{
+			addr:    env.GetString("REDIS_ADDR", "localhost:6379"),
+			pw:      env.GetString("REDIS_PW", ""),
+			db:      env.GetInt("REDIS_DB", 0),
+			enabled: env.GetBool("REDIS_ENABLED", true),
+		},
 		env: env.GetString("APP_ENV", "development"),
 		mail: mailConfig{
 			exp:       time.Hour * 1,
@@ -66,6 +74,7 @@ func main() {
 				exp:    time.Hour * 24 * 3,
 			},
 		},
+
 		version: env.GetString("APP_VERSION", "0.0.2"),
 		apiURL:  env.GetString("EXTERNAL_URL", "http://localhost:8080"),
 	}
@@ -75,17 +84,29 @@ func main() {
 	logger.Infof("starting application in %s mode", cfg.env)
 	db, err := db.NewDB(cfg.db.addr, cfg.db.maxOpenConns, cfg.db.maxIddleConns, cfg.db.maxIdleTime)
 	if err != nil {
-		logger.Panic(err)
+		logger.Fatal(err)
 	}
+
 	defer db.Close()
 	logger.Infof("db connection pool established")
+
+	//cache
+	var rdb *redis.Client
+	if cfg.redisCfg.enabled {
+		rdb = cache.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+		logger.Infof("redis connection established")
+
+	}
+
 	store := store.NewStorage(db)
+	cacheStorage := cache.NewRedisStorage(rdb)
 
 	mailer := mailer.NewSendgrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
 	auth := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
 	app := &application{
 		config:        cfg,
 		store:         store,
+		cacheStorage:  cacheStorage,
 		logger:        logger,
 		mailer:        mailer,
 		authenticator: auth,

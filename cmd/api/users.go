@@ -17,16 +17,25 @@ const userCtx userKey = "user"
 //	@Summary		Get user by ID
 //	@Description	Fetch a single user by their ID
 //	@Tags			users
-//	@Accept			json
 //	@Produce		json
-//	@Param			userID	path		int	true	"User ID"
-//	@Success		200		{object}	store.User
-//	@Failure		400		{object}	error	"Invalid user ID"
-//	@Failure		404		{object}	error	"User not found"
-//	@Failure		500		{object}	error	"Internal server error"
+//	@Param			userID	path		int			true	"User ID"
+//	@Success		200		{object}	store.User	"User data"
+//	@Failure		404		{object}	error		"User not found"
+//	@Failure		500		{object}	error		"Internal server error"
+//	@Security		ApiKeyAuth
 //	@Router			/users/{userID} [get]
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	user := getUserFromCtx(r)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
+		app.badReqestResponse(w, r, err)
+		return
+	}
+
+	user, err := app.getUser(r.Context(), userID)
+	if err != nil {
+		app.handleError(w, r, err)
+		return
+	}
 
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
 		app.handleError(w, r, err)

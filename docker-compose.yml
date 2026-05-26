@@ -5,7 +5,7 @@ services:
     container_name: e-com
     environment:
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER:  ${DB_USER}
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
@@ -20,8 +20,41 @@ services:
       retries: 5
       start_period: 10s
 
+  redis:
+    image: redis:8.6-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./system/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - app-networks
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "127.0.0.1:8081:8081"
+    networks:
+      - app-networks
+    depends_on:
+      - redis
+
 volumes:
   db_data:
+  redis-data:
+
 
 networks:
   app-networks:

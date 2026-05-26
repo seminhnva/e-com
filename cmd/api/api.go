@@ -12,6 +12,7 @@ import (
 	"github.com/seminhnva/e-com/internal/auth"
 	"github.com/seminhnva/e-com/internal/mailer"
 	"github.com/seminhnva/e-com/internal/store"
+	"github.com/seminhnva/e-com/internal/store/cache"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 )
@@ -19,6 +20,7 @@ import (
 type application struct {
 	config        config
 	store         store.Storage
+	cacheStorage  cache.Storage
 	db            dbConfig
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
@@ -34,6 +36,14 @@ type config struct {
 	mail        mailConfig
 	frontendURL string
 	auth        authConfig
+	redisCfg    redisConfig
+}
+
+type redisConfig struct {
+	addr    string
+	pw      string
+	db      int
+	enabled bool
 }
 
 type authConfig struct {
@@ -75,7 +85,7 @@ func (app *application) mount() *chi.Mux {
 	r.Use(middleware.Timeout(3 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckHandler)
+		r.Get("/health", app.healthCheckHandler)
 
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
