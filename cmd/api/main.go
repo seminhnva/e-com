@@ -1,6 +1,8 @@
 package main
 
 import (
+	"expvar"
+	"runtime"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -67,7 +69,7 @@ func main() {
 		auth: authConfig{
 			basic: basicConfig{
 				user: env.GetString("AUTH_BASIC_USER", "admin"),
-				pass: env.GetString("AUTH_BASIC_PASS", "admin1"),
+				pass: env.GetString("AUTH_BASIC_PASS", "admin"),
 			},
 			token: tokenConfig{
 				secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
@@ -114,6 +116,10 @@ func main() {
 		authenticator: auth,
 		ratelimiter:   ratelimiter,
 	}
+
+	expvar.Publish("goroutines", expvar.Func(func() any {
+		return runtime.NumGoroutine()
+	}))
 	mux := app.mount()
 	logger.Fatal(app.run(mux))
 }

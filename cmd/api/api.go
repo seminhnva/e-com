@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"expvar"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -101,8 +102,9 @@ func (app *application) mount() *chi.Mux {
 	r.Use(app.RateLimiterMiddleware)
 
 	r.Route("/v1", func(r chi.Router) {
+		// Operation
 		r.Get("/health", app.healthCheckHandler)
-
+		r.With(app.BasicAuthMiddleware()).Get("/debug/vars", expvar.Handler().ServeHTTP)
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
 
