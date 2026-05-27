@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/seminhnva/e-com/compare/v1.1.0...v1.2.0) (2026-05-27)
+
+
+### Features
+
+* dockerfile ([30bc0a2](https://github.com/seminhnva/e-com/commit/30bc0a20d71295148e2956b247244ed41cdaed5e))
+
 ## [1.1.0](https://github.com/seminhnva/e-com/compare/v1.0.0...v1.1.0) (2026-05-27)
 
 
