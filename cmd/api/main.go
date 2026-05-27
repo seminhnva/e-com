@@ -16,6 +16,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var version = "1.0.0-dev"
+
 //	@title			Go social API
 //	@description	An API for a social media application built with Go.
 //	@termsOfService	http://swagger.io/terms/
@@ -78,7 +80,7 @@ func main() {
 			},
 		},
 
-		version: env.GetString("APP_VERSION", "0.0.1"),
+		version: version,
 		apiURL:  env.GetString("EXTERNAL_URL", "http://localhost:8080"),
 	}
 	logger := zap.Must(zap.NewProduction()).Sugar()
