@@ -8,6 +8,7 @@ import (
 	"github.com/seminhnva/e-com/internal/db"
 	"github.com/seminhnva/e-com/internal/env"
 	"github.com/seminhnva/e-com/internal/mailer"
+	"github.com/seminhnva/e-com/internal/ratelimiter"
 	"github.com/seminhnva/e-com/internal/store"
 	"github.com/seminhnva/e-com/internal/store/cache"
 	"go.uber.org/zap"
@@ -103,6 +104,7 @@ func main() {
 
 	mailer := mailer.NewSendgrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
 	auth := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
+	ratelimiter := ratelimiter.NewBucketTokenRatelimiter(5, 10)
 	app := &application{
 		config:        cfg,
 		store:         store,
@@ -110,6 +112,7 @@ func main() {
 		logger:        logger,
 		mailer:        mailer,
 		authenticator: auth,
+		ratelimiter:   ratelimiter,
 	}
 	mux := app.mount()
 	logger.Fatal(app.run(mux))

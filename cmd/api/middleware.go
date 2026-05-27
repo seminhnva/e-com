@@ -92,6 +92,16 @@ func (app *application) BasicAuthMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
+func (app *application) RateLimiterMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !app.ratelimiter.Allow(r.RemoteAddr) {
+			app.rateLimiterExceedResponse(w, r, fmt.Errorf("rate limit exceeded for %s", r.RemoteAddr))
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (app *application) checkPostOwnership(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := getUserFromCtx(r)

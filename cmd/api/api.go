@@ -16,6 +16,7 @@ import (
 	"github.com/seminhnva/e-com/docs"
 	"github.com/seminhnva/e-com/internal/auth"
 	"github.com/seminhnva/e-com/internal/mailer"
+	"github.com/seminhnva/e-com/internal/ratelimiter"
 	"github.com/seminhnva/e-com/internal/store"
 	"github.com/seminhnva/e-com/internal/store/cache"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -30,6 +31,7 @@ type application struct {
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
+	ratelimiter   ratelimiter.Ratelimiter
 }
 
 type config struct {
@@ -87,7 +89,7 @@ func (app *application) mount() *chi.Mux {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
-	r.Use(middleware.Timeout(3 * time.Second))
+	r.Use(app.RateLimiterMiddleware)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)

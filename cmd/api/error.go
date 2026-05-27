@@ -68,6 +68,14 @@ func (app *application) unauthorizedErrorResponse(w http.ResponseWriter, r *http
 	)
 	writeJSONError(w, http.StatusUnauthorized, "unauthorized")
 }
+func (app *application) rateLimiterExceedResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logger.Warnw("TooM any Requests",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"error", err.Error(),
+	)
+	writeJSONError(w, http.StatusTooManyRequests, "Too Many Requests")
+}
 
 func (app *application) unauthorizedBasicErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.logger.Warnw("unauthorized basic",
