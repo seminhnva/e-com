@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var version = "1.0.0-dev.1"
+var version = "1.0.0-dev"
 
 //	@title			Go social API
 //	@description	An API for a social media application built with Go.
