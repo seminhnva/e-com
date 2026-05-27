@@ -78,7 +78,7 @@ func main() {
 			},
 		},
 
-		version: env.GetString("APP_VERSION", "0.0.2"),
+		version: env.GetString("APP_VERSION", "0.0.1"),
 		apiURL:  env.GetString("EXTERNAL_URL", "http://localhost:8080"),
 	}
 	logger := zap.Must(zap.NewProduction()).Sugar()
