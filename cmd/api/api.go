@@ -29,7 +29,6 @@ type application struct {
 	config        config
 	store         store.Storage
 	cacheStorage  cache.Storage
-	db            dbConfig
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
