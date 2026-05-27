@@ -18,7 +18,13 @@ jobs:
 
       - name: Read new version
         id: version
-        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_OUTPUT
+        run: |
+          BASE_VERSION=$(cat version.txt)
+          if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+            echo "VERSION=${BASE_VERSION}-dev" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${BASE_VERSION}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Update version in main.go
         run: |
