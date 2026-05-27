@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/seminhnva/e-com/compare/v1.0.0...v1.1.0) (2026-05-27)
+
+
+### Features
+
+* update api version automatically ([5e1dcb9](https://github.com/seminhnva/e-com/commit/5e1dcb9429c05c176b7ead1add9d2bbc5ed81ae8))
+* update api version automatically ([9017d0a](https://github.com/seminhnva/e-com/commit/9017d0a52971ab82b31b665699b88def59864f15))
+
 ## 1.0.0 (2026-05-27)
 
 
