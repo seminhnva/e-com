@@ -67,6 +67,12 @@ func (br *BucketTokenRateLimiter) getLimiter(ip string) *rate.Limiter {
 	return newClient.limiter
 }
 
+// NoOpRateLimiter is a no-op implementation of Ratelimiter for use in tests.
+// It always allows every request.
+type NoOpRateLimiter struct{}
+
+func (n *NoOpRateLimiter) Allow(_ string) bool { return true }
+
 // cleanupStaleClients removes entries that haven't been seen within ttl.
 // Runs as a background goroutine started by NewBucketTokenRatelimiter.
 func (br *BucketTokenRateLimiter) cleanupStaleClients(ttl time.Duration) {

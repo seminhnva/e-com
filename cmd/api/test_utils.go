@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/seminhnva/e-com/internal/auth"
+	"github.com/seminhnva/e-com/internal/ratelimiter"
 	"github.com/seminhnva/e-com/internal/store"
 	"github.com/seminhnva/e-com/internal/store/cache"
 	"go.uber.org/zap"
@@ -24,6 +25,7 @@ func newTestApplication(t *testing.T) *application {
 		store:         mockStore,
 		cacheStorage:  mockCacheStore,
 		authenticator: testAuth,
+		ratelimiter:   &ratelimiter.NoOpRateLimiter{},
 	}
 }
 
