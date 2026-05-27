@@ -22,14 +22,14 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 
 		parts := strings.Split(authHeader, " ") //authorization: Bearer token
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			app.unauthorizedBasicErrorResponse(w, r, fmt.Errorf("authorization header is malformed"))
+			app.unauthorizedErrorResponse(w, r, fmt.Errorf("authorization header is malformed"))
 			return
 		}
 
 		token := parts[1]
 		jwtToken, err := app.authenticator.ValidateToken(token)
 		if err != nil {
-			app.unauthorizedBasicErrorResponse(w, r, err)
+			app.unauthorizedErrorResponse(w, r, err)
 			return
 		}
 
@@ -37,7 +37,7 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 
 		userID, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["sub"]), 10, 64)
 		if err != nil {
-			app.unauthorizedBasicErrorResponse(w, r, err)
+			app.unauthorizedErrorResponse(w, r, err)
 			return
 		}
 		ctx := r.Context()
