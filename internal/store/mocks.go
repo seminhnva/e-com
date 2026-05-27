@@ -13,7 +13,7 @@ func NewMockStore() Storage {
 }
 
 type MockUserStore struct {
-	GetByIdFn   func(ctx context.Context, id int64) (*User, error)
+	GetByIdFn    func(ctx context.Context, id int64) (*User, error)
 	GetByEmailFn func(ctx context.Context, email string) (*User, error)
 }
 
